@@ -113,11 +113,11 @@
 	                            <newline/>
 	                        </group>
 	                    </sheet>
-	                </page>
-	                <page string="Linked Documents">
-	                    <field name="linkeddocuments"/>
-	                </page>
-	            </notebook>
+                </page>
+                <page string="Linked Documents">
+                    <field name="linkeddocuments"/>
+                </page>
+            </notebook>
 	        </field>
 	    </record>
 	

@@ -54,20 +54,7 @@ class plm_config_settings(models.Model):
     def cancel(self):
         pass
 
-    plm_service_id  =   fields.Char('Service ID',            size=128,   help="Insert the Service ID and register your PLM module. Ask it to Codebeex.")
-    activated_id    =   fields.Char('Activated PLM client',  size=128,   help="Listed activated Client.")
-    active_editor   =   fields.Char('Client Editor Name',    size=128,   help="Used Editor Name")
-    active_node     =   fields.Char('OS machine name',       size=128,   help="Editor Machine name")
-    expire_date     =   fields.Datetime('Expiration Date',               help="Expiration Date")
-    active_os       =   fields.Char('OS name',               size=128,   help="Editor OS name")
-    active_os_rel   =   fields.Char('OS release',            size=128,   help="Editor OS release")
-    active_os_ver   =   fields.Char('OS version',            size=128,   help="Editor OS version")
-    active_os_arch  =   fields.Char('OS architecture',       size=128,   help="Editor OS architecture")
-    node_id         =   fields.Char('Registered PLM client', size=128,   help="Listed registered Client.")
-    domain_id       =   fields.Char('Domain Name',           size=128,   help="Listed domain name.")
-    active_kind     =   fields.Char('Kind of license',       size=128,   help="Kind of license code ('node-locked' = Local individual license, 'domain-assigned' = Domain level license).")
-
-#   Option fields managed for each Service ID
+#   Option fields managed for PLM configuration
     opt_editbom             =   fields.Boolean("Edit BoM not in 'draft'",                            help="Allows to edit BoM if product is not in 'Draft' status. Default = False.")
     opt_editreleasedbom     =   fields.Boolean("Edit BoM in 'released'",                             help="Allows to edit BoM if product is in 'Released' status. Default = False.")
     opt_obsoletedinbom      =   fields.Boolean("Allow Obsoleted in BoM",                             help="Allow Obsoleted products releasing a BoM. Default = False.",                                       default = False)
@@ -83,72 +70,6 @@ class plm_config_settings(models.Model):
     opt_mgeResetTmRoute     =   fields.Boolean("Manage reset of the timing registered on Routing",   help="Allows to reset the timing registered on Routing performing a New Revision. Default = False.",     default = False)
 #   Option fields managed for each Service ID
 
-    @api.model
-    def GetServiceIds(self, oids=None, default=None):
-        """
-            Get all Service Ids registered.
-        """
-        ids = []
-        
-        for part in self.search([('activated_id', '=', False)]):
-            ids.append(part.plm_service_id)
-        return getCleanList(ids)
-
-    @api.model
-    def RegisterActiveId(self, vals, default=None):
-        """
-            Registers Service Id & Activation infos.  [serviceID, activation, activeEditor, expirationDate, (system, node, release, version, machine, processor), nodeId, domainName ]
-        """
-        default = {}
-        
-        serviceID, activation, activeEditor, expirationDate, (
-        system, node, release, version, machine, processor), nodeId, domainName, kind = vals
-        if activation:
-            default.update({
-                'plm_service_id': serviceID,
-                'activated_id': activation,
-                'active_editor': activeEditor,
-                'domain_id': domainName,
-                'expire_date': datetime.datetime.strptime(expirationDate, "%d/%m/%Y"),
-                'active_os': system,
-                'active_node': node,
-                'active_os_rel': release,
-                'active_os_ver': version,
-                'active_os_arch': machine,
-                'node_id': nodeId,
-                'active_kind': kind,
-            })
-
-            for partId in self.search([('plm_service_id', '=', serviceID), ('activated_id', '=', activation),
-                                            ('active_editor', '=', activeEditor)]):
-                partId.write(default)
-                return False
-
-            self.create(default)
-        return False
-
-    @api.model
-    def GetActivationId(self, vals=[], default=None):
-        """
-            Gets activation codes as registered.
-        """
-        
-        results = []
-        found = []
-        today = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
-        nodeId, domainID, activeEditor, _ = vals
-
-        if len(domainID) > 0:
-            for partId in self.search([('domain_id', '=', domainID), ('expire_date', '>', today)]):
-                results.append((partId.plm_service_id, partId.activated_id, partId.domain_id))
-                found.append(partId.id)
-
-        for partId in self.search([('node_id', '=', nodeId), ('expire_date', '>', today)]):
-            if partId.id not in found:
-                results.append((partId.plm_service_id, partId.activated_id, partId.domain_id))
-
-        return results
-
     def getoptionfields(self):
         ret=[]
         for keyName in list(self._fields.keys()):
@@ -159,14 +80,16 @@ class plm_config_settings(models.Model):
     @api.model
     def GetOptions(self, request=None, default=None):
         """
-            Gets activation codes as registered.
+            Gets PLM configuration options.
         """
         results = {}
         
         optionNames=self.getoptionfields()
-        for optId in self.search([('activated_id', '=', False), ('plm_service_id', '!=', False)]):
+        # Get first configuration record or create default
+        config_records = self.search([], limit=1)
+        if config_records:
             for optionName in optionNames:
-                results[optionName]=optId[optionName]
+                results[optionName]=config_records[optionName]
         return results
 
 ###################################################################
@@ -679,15 +602,6 @@ class plm_config_settings(models.Model):
         return properties
 
     @api.model
-    def GetServiceNodes(self, oids=[], default=None):
-        """
-            Get all Service Ids registered.
-        """
-        
-        message=_("Insert your Activation Code as provided by Codebeex.")
-        ids=self.GetServiceIds(oids, default=default)
-        return ids, message
-
     @api.model
     def GetMethodNames(self, request=None, default=None):
         """

@@ -212,6 +212,12 @@ class plm_document(models.Model):
         result = {}
         value = False
         for objDoc in self:
+            # Skip if document is being created and doesn't have name/revision yet
+            if not objDoc.name or objDoc.revisionid is False:
+                objDoc.datas = False
+                result[objDoc.id] = ''
+                continue
+                
             if objDoc.type == 'binary':
                 if not objDoc.store_fname:
                     value = objDoc.db_datas
