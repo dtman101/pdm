@@ -48,7 +48,7 @@ Server Installation
 We suggest to maintain separated custom addon directory from Odoo addons; a simple matter of order to help you on future maintenance.
 So we recommend to create /opt/addons and download in it our module. Don't leave module in zip archive (if any), unzip it and remove the zip from /opt/addons.
 Add /opt/addons to your "/etc/odoo-server.conf" file at the end of "addons_path" variable. 
-Documents uploaded from CAD system will be stored in your Odoo server in a secure Vault, we suggest to configure your server to manage a disk for the repository "document_path"
+Documents uploaded from CAD system will be stored in your Odoo server in a secure Vault, we suggest to configure your server to manage a disk for the repository "plm_document_path"
 Restart your odoo server and update module list, in Apps you'll find "Engineering & Lifecycle Management" or filter on Apps using "pdm" key
 
 Supposing your O.S. account will be "odoo", your document repository will be placed in "/srv/filestore" directory, let's install our module (downloaded in /home/odoo/Documents). 
@@ -67,9 +67,9 @@ From a terminal let's type:
 * Configure your /etc/odoo-server.conf
     * # sudo vi /etc/odoo-server.conf
 
-        document_path = /srv/filestore
+        plm_document_path = /srv/filestore
          
-        data_dir = /srv/filestore/dirdata
+        plm_data_dir = /srv/filestore/dirdata
         
         addons_path = /opt/server/addons,/opt/server/odoo/addons,/opt/addons        
 

@@ -1339,7 +1339,7 @@ class plm_config_settings(models.Model):
         d0 = datetime.datetime(2000, 1, 1)
         d1 = datetime.datetime.now()
         midmod = (d1-d0).total_seconds()
-        base_dir = tools_config.get('data_dir', os.path.join(tools_config['root_path'], 'filestore'))
+        base_dir = tools_config.get('plm_data_dir', os.path.join(tools_config['root_path'], 'filestore'))
         return "{base}/{table}-{uid}-{midmod}.csv".format(base=base_dir, table=tablename, uid=self.env.uid, midmod=midmod)
 
     @api.model
@@ -1673,7 +1673,7 @@ class plm_mail(models.Model):
         """
         receivers=self.receivers
         if receivers:
-            opt_repository = tools_config.get('document_path', tools_config['data_dir'])
+            opt_repository = tools_config.get('plm_document_path', tools_config['plm_data_dir'])
             directory=repository if repository else opt_repository
             partner_obj = self.env['res.partner']
             mail_obj = self.env['mail.mail']

@@ -1301,7 +1301,7 @@ class plm_document(models.Model):
     #   Overridden methods for this entity
  
     def _get_filestore(self):
-        dms_Root_Path = tools_config.get('document_path', os.path.join(tools_config['data_dir'], 'filestore'))
+        dms_Root_Path = tools_config.get('plm_document_path', os.path.join(tools_config['plm_data_dir'], 'filestore'))
         return os.path.join(dms_Root_Path, self.env.cr.dbname)
 
     def copy(self, default={}):
